@@ -19,10 +19,71 @@
 
     <title>Todoアプリ</title>
   </head>
+
   <body>
     <div class="container">
-      <!-- Content here -->
+      <ul class="list-group" id="task-list">
+        <!--<li class="list-group-item">
+          <div class="row">
+              <div>犬の散歩をする</div>
+              <div>2022-04-27T08:13:00.000Z</div>
+              <div>
+                <button type="update-button" class="btn btn-primary">更新</button> 
+              <div>
+                <button
+                  type="delete-button"
+                  id="delete-button"
+                  class="btn btn-danger delete"
+                >
+                  削除
+                </button>
+              </div>
+          </div>
+        </li>-->
+      </ul>
     </div>
+
+    <footer>
+      <div class="create-form" id="create-form" style="direction: column">
+        <div class="center">
+          <form class="row g-3">
+            <input
+              type="text"
+              id="create-form"
+              name="task"
+              class="form-control"
+              placeholder="タスク名"
+            />
+
+            <input
+              type="datetime-local"
+              class="form-control"
+              id="deadline"
+              name="deadline"
+            />
+
+            <!--<input
+              class="form-control"
+              list="datalistOptions"
+              id="category"
+              name="category"
+              placeholder="category"
+            />
+
+            <datalist id="datalistOptions">
+              <option value="1">生活</option>
+              <option value="2">勉強</option>
+              <option value="3">仕事</option>
+              <option value="4">趣味</option>
+            </datalist>-->
+
+            <button class="btn btn-primary mb-3" id="create-task" type="button">
+              タスクの追加
+            </button>
+          </form>
+        </div>
+      </div>
+    </footer>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -41,5 +102,66 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"
     ></script>
+
+    <script src="../javascripts/index.js"></script>
+
+    <script>
+      // 登録ボタン押下時
+      $("#create-task").on("click", async function () {
+        // リクエストデータをフォームから取得
+        const requestData = {
+          taskName: $("#create-form input[name=task]").val(),
+          deadline: $("#create-form input[name=deadline]").val(),
+          category: $("#create-form input[name=category]").val(),
+        };
+        console.log(requestData);
+
+        // 新規登録APIを実行
+        const response = await httpPost(
+          "//" + window.location.host + "/api/tasks",
+          requestData
+        );
+
+        //　画面をリロード
+        window.location.reload();
+      });
+      // 削除ボタンの押下時
+      $(document).on("click", "#delete-button", async function () {
+        const taskName = $(this).data("delete");
+        if (confirm(`下記の内容を削除します。 ${taskName}`)) {
+          const id = $(this).data("id");
+
+          //削除APIを実行
+          const response = await httpDelete(
+            "//" + window.location.host + `/api/tasks/${id}`
+          );
+
+          // 画面をリロード
+          window.location.reload();
+        }
+      });
+
+      // タスク一覧取得
+      $(async function () {
+        //一覧取得APIを実行
+        const response = await httpGet(
+          "//" + window.location.host + "/api/tasks"
+        );
+        console.log(response);
+        const list = response.map((item) => {
+          //リストを表示
+          return `<li class="list-group-item">
+            <span>${item.task_name}</span>
+            <span>${item.deadline}</span>
+            
+            <span><button type="button" id="delete-button" data-id=${item.id} data-delete=${item.task_name} class="btn btn-danger delete">削除</button></span>
+            </div>
+        </li>`;
+        });
+        console.log(list);
+        // ulタグにリスト追加<span><button type="button" id="update-button" data-id=${item.id} class="btn btn-primary">更新</button></span>
+        $("ul#task-list").append(list);
+      });
+    </script>
   </body>
 </html>
